@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+ 
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id         String   @id @default(uuid()) @db.Uuid
+  nombre     String
+  email      String   @unique
+  password   String
+  rol        Rol
+  creado_en  DateTime @default(now())
+  clinica_id String?  @db.Uuid
+  citas      Cita[]
+  clinica    Clinica? @relation(fields: [clinica_id], references: [id])
+  atenciones  UsuarioPaciente[]
+}
+
+model Clinica {
+  id           String        @id @default(uuid()) @db.Uuid
+  nombre       String
+  direccion    String?
+  telefono     String?
+  email        String?
+  creado_en    DateTime      @default(now())
+  citas        Cita[]
+  pacientes    Paciente[]
+  tratamientos Tratamiento[]
+  usuarios     Usuario[]
+}
+
+model Paciente {
+  id               String    @id @default(uuid()) @db.Uuid
+  clinica_id       String    @db.Uuid
+  nombre           String
+  email            String?
+  telefono         String?
+  fecha_nacimiento DateTime?
+  genero           String?
+  notas            String?
+  creado_en        DateTime  @default(now())
+  citas            Cita[]
+  mensajes         Mensaje[]
+  clinica          Clinica   @relation(fields: [clinica_id], references: [id])
+  atenciones       UsuarioPaciente[]
+}
+
+model UsuarioPaciente {
+  usuario_id       String   @db.Uuid
+  paciente_id      String   @db.Uuid
+  fecha            DateTime @default(now())
+
+  usuario          Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  paciente         Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+
+  @@id([usuario_id, paciente_id])
+}
+
+model Tratamiento {
+  id                String   @id @default(uuid()) @db.Uuid
+  clinica_id        String   @db.Uuid
+  nombre            String
+  descripcion       String?
+  precio            Float?
+  duracion_estimada Int?
+  creado_en         DateTime @default(now())
+  citas             Cita[]
+  clinica           Clinica  @relation(fields: [clinica_id], references: [id])
+}
+
+model Cita {
+  id             String       @id @default(uuid()) @db.Uuid
+  clinica_id     String       @db.Uuid
+  paciente_id    String       @db.Uuid
+  tratamiento_id String?      @db.Uuid
+  doctor_id      String?      @db.Uuid
+  fecha          DateTime
+  estado         EstadoCita   @default(PENDIENTE)
+  ingreso        Float?
+  creado_en      DateTime     @default(now())
+  notas          String?
+  clinica        Clinica      @relation(fields: [clinica_id], references: [id])
+  doctor         Usuario?     @relation(fields: [doctor_id], references: [id])
+  paciente       Paciente     @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+  tratamiento    Tratamiento? @relation(fields: [tratamiento_id], references: [id])
+}
+
+model Mensaje {
+  id          String   @id @default(uuid()) @db.Uuid
+  paciente_id String   @db.Uuid
+  contenido   String
+  enviado_por Rol
+  canal       String?
+  tipo        String?
+  fecha       DateTime @default(now())
+  paciente    Paciente @relation(fields: [paciente_id], references: [id])
+}
+
+enum Rol {
+  SUPERADMIN
+  ADMIN
+  DOCTOR
+  ASISTENTE
+}
+
+enum EstadoCita {
+  PENDIENTE
+  CONFIRMADA
+  COMPLETADA
+  CANCELADA
+}

@@ -1,0 +1,11 @@
+// cuando una migracion falla usar: Remove-Item -Recurse -Force prisma\migrations\'20251030082904_delete_mensajes_usuario' -> 'nombre de la migracion'
+// luego resetar la db: npx prisma migrate reset
+// luego podemos migrar
+// con esto creamos o actulizamos la bd en supabase: px prisma migrate dev --name init / npx prisma migrate dev --name nombre_del_cambio
+
+// luego generamos el cliente - Cada vez que cambias tu schema.prisma (tablas, campos, relaciones), debes correr prisma generate para que 
+//@prisma/client se actualice con los modelos correctos.: npx prisma generate
+
+// crear auth Controller: nest generate controller auth si hay carpeta lo anida, si no hay lo crea
+// crear service controller: nest g service auth
+// crear module controller : nest generate module auth
